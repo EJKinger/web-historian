@@ -6,6 +6,7 @@ var fs = require('fs');
 
 var actions = {
   'GET': function(req, res){
+    console.log('------------->GET');
     if(req.url === "/"){
       httpHelper.handleHeader(res, 'text/html');
       httpHelper.serveAssets(res, 'index.html', archive.paths.siteAssets);
@@ -34,24 +35,31 @@ var actions = {
   },
 
   'POST': function(req, res){
+    console.log('--------------->POST');
     var message = '';
     req.on('data', function(chunk){
       message += chunk;
     });
     req.on('end', function(){
+      console.log('onEnd');
       archive.addUrlToList(message.slice(4), function(){
       //write header and stuff
-
-      archive.isUrlInList(message.slice(4), function(itIs){
-        if(itIs){
-          httpHelper.handleHeader(res, 'text/html');
-          httpHelper.serveAssets(res, req.url, archive.paths.archivedSites + '/' + message.slice(4));
-        } else{
-          archive.downloadUrls(message.slice(4));
-          httpHelper.handleHeader(res, 'text/html', 201);
-          httpHelper.serveAssets(res, 'loading.html', archive.paths.siteAssets);
-        }
-      });
+        console.log('isUrlInList?');
+        archive.isUrlInList(message.slice(4), function(itIs){
+          if(itIs){
+            console.log('handleHeader true');
+            httpHelper.handleHeader(res, 'text/html');
+            console.log('serveAssets true');
+            httpHelper.serveAssets(res, req.url, archive.paths.archivedSites + '/' + message.slice(4));
+          } else{
+            console.log('downloadUrls false');
+            archive.downloadUrls(message.slice(4));
+            console.log('handleHeader false');
+            httpHelper.handleHeader(res, 'text/html', 201);
+            console.log('serveAssets false');
+            httpHelper.serveAssets(res, 'loading.html', archive.paths.siteAssets);
+          }
+        });
 
       
       });
